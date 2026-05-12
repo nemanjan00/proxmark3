@@ -14,6 +14,7 @@ This directory is an **architecture-oriented** tour of the Proxmark3 (Iceman for
 6. [`06-fpga.md`](06-fpga.md) — the Verilog side: how `fpga_pm3_top.v` is structured, what bitstreams exist, how the ARM loads and configures them, how ARM↔FPGA share pins (SSP/SSC).
 7. [`07-client.md`](07-client.md) — the `client/` C codebase: the command tree, `cliparser`, Lua/Python scripting, dependencies.
 8. [`08-build.md`](08-build.md) — the build system: top-level recursive Makefile, platform/HAL selection, where artifacts land, flashing.
+9. [`09-examples.md`](09-examples.md) — **worked examples**: real CLI sessions, exact wire bytes for `hw ping`, the full firmware↔FPGA↔RF dance for `hf 14a reader`, a dummy "hello world" command (`hw echo42`) end-to-end, a dummy standalone mode, Lua script example, build/flash cheat sheet.
 
 ## What this is *not*
 
