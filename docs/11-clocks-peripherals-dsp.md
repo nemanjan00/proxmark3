@@ -10,16 +10,16 @@ A hardware-level view of the ARM↔FPGA↔AFE system. Three concerns:
 
 ```mermaid
 flowchart LR
-    XTAL16[("16 MHz xtal<br/>MAINCK")] --> PMC
-    XTAL1356[("13.56 MHz xtal<br/>ck_1356meg<br/>ck_1356megb")] -.-> FPGA_HF
+    XTAL16["16 MHz xtal<br/>MAINCK"] --> PMC
+    XTAL1356["13.56 MHz xtal<br/>ck_1356meg, ck_1356megb"] -.-> FPGA_HF
+
     subgraph ARM["ARM AT91SAM7S"]
-        PMC["PMC<br/>PLL ×12 ÷2 ÷2 = 48 MHz MCK<br/>+ PCK0 = PLL ÷4 = 24 MHz"]
-        MCK[("MCK = 48 MHz<br/>CPU, peripheral bus")]
-        PCK0[("PCK0 = 24 MHz<br/>output to FPGA pin")]
-        SSC["SSC<br/>(serial sync controller)"]
-        SPI["SPI<br/>(config word to FPGA)"]
-        ADCp["(unused for RF —<br/>FPGA samples the analog ADC)"]
-        TC["Timer/Counter TC0..2<br/>(SspClk count, busy waits)"]
+        PMC["PMC<br/>PLL x12 div2 div2 = 48 MHz MCK<br/>PCK0 = PLL div4 = 24 MHz"]
+        MCK["MCK = 48 MHz<br/>CPU + peripheral bus"]
+        PCK0["PCK0 = 24 MHz<br/>output to FPGA pin"]
+        SSC["SSC<br/>serial sync controller"]
+        SPI["SPI config<br/>writes config word"]
+        TC["Timer/Counter TC0..TC2<br/>SspClk count, busy waits"]
         PMC --> MCK
         PMC --> PCK0
         MCK --> SSC
@@ -27,28 +27,27 @@ flowchart LR
         MCK --> TC
     end
 
-    PCK0 -->|pck0 pin| FPGA
-    SPI -->|spck, ncs, mosi| FPGA
-    SSC <-->|ssp_clk, ssp_din, ssp_dout, ssp_frame| FPGA
-    
     subgraph FPGA["Xilinx FPGA"]
-        FPGA_HF["hi_* sub-modules<br/>clocked @ 13.56 MHz (HF)"]
-        FPGA_LF["lo_* sub-modules<br/>clocked @ 24 MHz pck0,<br/>divided by clk_divider"]
-        FPGA_SPI["SPI rx<br/>clocked @ spck (asynchronous,<br/>posedge spck if ~ncs)"]
+        FPGA_HF["hi_* sub-modules<br/>13.56 MHz HF clock"]
+        FPGA_LF["lo_* sub-modules<br/>24 MHz pck0, divided<br/>by clk_divider"]
+        FPGA_SPI["SPI rx<br/>clocked on spck<br/>posedge spck if ~ncs"]
     end
-    
-    FPGA_HF --> AFE
-    FPGA_LF --> AFE
-    
+
+    PCK0 -->|pck0 pin| FPGA_LF
+    SPI -->|spck, ncs, mosi| FPGA_SPI
+    SSC <-->|ssp_clk + ssp_din + ssp_dout + ssp_frame| FPGA_HF
+
     subgraph AFE["Analog front-end"]
-        ADC[("8-bit ADC<br/>sample-clocked by FPGA's adc_clk")]
-        COIL["coil drivers<br/>pwr_hi (13.56), pwr_lo (125k)<br/>pwr_oe1..4"]
+        ADC["8-bit ADC<br/>sample-clocked by adc_clk"]
+        COIL["coil drivers<br/>pwr_hi 13.56 MHz<br/>pwr_lo 125 kHz<br/>pwr_oe1..pwr_oe4"]
         XCROSS["zero-cross detectors<br/>cross_hi, cross_lo"]
     end
-    
-    ADC -->|adc_d[7:0]| FPGA
-    FPGA -->|adc_clk| ADC
-    XCROSS -->|cross_hi, cross_lo| FPGA
+
+    FPGA_HF --> COIL
+    FPGA_LF --> COIL
+    ADC -->|adc_d 8-bit bus| FPGA_HF
+    FPGA_HF -->|adc_clk| ADC
+    XCROSS -->|cross_hi, cross_lo| FPGA_HF
     COIL <--> ANT(("antenna"))
 ```
 
