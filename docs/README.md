@@ -16,6 +16,7 @@ This directory is an **architecture-oriented** tour of the Proxmark3 (Iceman for
 8. [`08-build.md`](08-build.md) — the build system: top-level recursive Makefile, platform/HAL selection, where artifacts land, flashing.
 9. [`09-examples.md`](09-examples.md) — **worked examples**: real CLI sessions, exact wire bytes for `hw ping`, the full firmware↔FPGA↔RF dance for `hf 14a reader`, a dummy "hello world" command (`hw echo42`) end-to-end, a dummy standalone mode, Lua script example, build/flash cheat sheet.
 10. [`10-bitstream-hf15.md`](10-bitstream-hf15.md) — **anatomy of one bitstream**: full walkthrough of `fpga_pm3_hf_15.bit`. What `\`define`s the FPGA Makefile passes, why ISO15693 needs its own bitstream, the 2-subcarrier FSK demodulator in `hi_reader.v`, exact `conf_word` SPI values the ARM sends during `hf 15 reader`, and how the four shipped bitstreams compare.
+11. [`11-clocks-peripherals-dsp.md`](11-clocks-peripherals-dsp.md) — **hardware-level view**: ARM PLL/MCK/PCK0 derivation, the three FPGA clock domains (13.56 MHz HF, 24 MHz LF, async SPI config), full ARM peripheral map (SSC/PDC/SPI/USART/TC/PMC/PIO), FPGA pin interface, and a block diagram of the `hi_reader.v` DSP datapath (hysteresis → subcarrier reference → I/Q correlators → amplitude / FSK matched filter → SSC serializer).
 
 ## What this is *not*
 
