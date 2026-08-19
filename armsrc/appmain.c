@@ -29,6 +29,7 @@
 #include "fpga_loader.h"
 #include "fpga_apis.h"
 #include "rssi_apis.h"
+#include "rgb_apis.h"
 #include "string.h"
 #include "printf.h"
 #include "legicrf.h"
@@ -3623,10 +3624,11 @@ static void PacketReceived(PacketCommandNG *packet) {
             reply_ng(CMD_PM5_QC_TEST, QCTestPM5(&failed_item) ? PM3_SUCCESS : PM3_EFAILED, &failed_item, 1);
             break;
         }
-        case CMD_PM5_RGB_METER: {
-            // data[0] != 0 -> enable the antenna RGB field meter, 0 -> disable.
-            RgbFieldMeterEnable(packet->data.asBytes[0] != 0);
-            reply_ng(CMD_PM5_RGB_METER, PM3_SUCCESS, NULL, 0);
+        case CMD_PM5_RGB_SET: {
+            // payload: r, g, b -> set the antenna RGB LED colour (used by tune --rgb).
+            const uint8_t *rgb = packet->data.asBytes;
+            RgbLedSet(rgb[0], rgb[1], rgb[2]);
+            reply_ng(CMD_PM5_RGB_SET, PM3_SUCCESS, NULL, 0);
             break;
         }
 #endif
