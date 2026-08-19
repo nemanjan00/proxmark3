@@ -3617,6 +3617,12 @@ static void PacketReceived(PacketCommandNG *packet) {
             reply_ng(CMD_PM5_QC_TEST, QCTestPM5(&failed_item) ? PM3_SUCCESS : PM3_EFAILED, &failed_item, 1);
             break;
         }
+        case CMD_PM5_RGB_METER: {
+            // data[0] != 0 -> enable the antenna RGB field meter, 0 -> disable.
+            RgbFieldMeterEnable(packet->data.asBytes[0] != 0);
+            reply_ng(CMD_PM5_RGB_METER, PM3_SUCCESS, NULL, 0);
+            break;
+        }
 #endif
         default: {
             Dbprintf("%s: 0x%04x", "unknown command:", packet->cmd);

@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 This project uses the changelog in accordance with [keepchangelog](http://keepachangelog.com/). Please use this to write notable changes, which is not the same as git commit log...
 
 ## [unreleased][unreleased]
+- Added `hw rgbtune` (Proxmark5/PM5): drives the antenna RGB LED as a live field-strength meter - its colour tracks antenna coupling during field measurements (e.g. `hw tune`), for locating tags/implants by feel without watching the screen. Off by default; implemented entirely in the AT32 HAL so other platforms are unaffected (@nemanjan00)
 - Added Proxmark5 (PM5/AT32) reporting in `hw version` / `hw status`: correct MCU (AT32F437), flash size and `PM5` target, instead of the AT91-decoded "Unknown / 32 KB / PM3 GENERIC". The device now also reports its on-chip flash size, appended to the `CMD_VERSION` reply in a backward-compatible way (@nemanjan00)
 - Fixed `hf mf dump` preserving readable sector trailer Key B data instead of overwriting it with values from the supplied key file (@oSPANNERo)
 - Changed `magic_cards_notes.md` - documented the USCUID-UL helper scripts (`hf_mfu_uscuid` / `hf_mf_uscuid_prog`) and how to set the tag signature, replacing the outdated "No implemented commands" note (@c-barron)

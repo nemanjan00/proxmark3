@@ -1793,6 +1793,49 @@ static int CmdPM5Ant(const char *Cmd) {
     return PM3_SUCCESS;
 }
 
+static int CmdPM5RgbTune(const char *Cmd) {
+    CLIParserContext *ctx;
+    CLIParserInit(&ctx, "hw rgbtune",
+                  "Enable/disable the PM5 antenna RGB LED as a live field-strength meter.\n"
+                  "When enabled, the RGB LED colour tracks antenna coupling during field\n"
+                  "measurements (e.g. `hw tune`) - handy for locating tags/implants by feel\n"
+                  "without watching the screen. Disabled by default.",
+                  "hw rgbtune --on     -> enable the RGB field meter\n"
+                  "hw rgbtune --off    -> disable it (default)\n"
+                 );
+
+    void *argtable[] = {
+        arg_param_begin,
+        arg_lit0(NULL, "on",  "enable the RGB field meter"),
+        arg_lit0(NULL, "off", "disable the RGB field meter"),
+        arg_param_end
+    };
+    CLIExecWithReturn(ctx, Cmd, argtable, false);
+    bool on = arg_get_lit(ctx, 1);
+    bool off = arg_get_lit(ctx, 2);
+    CLIParserFree(ctx);
+
+    if (on == off) { // neither, or both
+        PrintAndLogEx(WARNING, "specify exactly one of " _YELLOW_("--on") " / " _YELLOW_("--off"));
+        return PM3_EINVARG;
+    }
+
+    uint8_t enable = on ? 1 : 0;
+    clearCommandBuffer();
+    SendCommandNG(CMD_PM5_RGB_METER, &enable, sizeof(enable));
+    PacketResponseNG resp;
+    if (WaitForResponseTimeout(CMD_PM5_RGB_METER, &resp, 1000) == false) {
+        PrintAndLogEx(WARNING, "command execution time out");
+        return PM3_ETIMEOUT;
+    }
+    if (resp.status != PM3_SUCCESS) {
+        PrintAndLogEx(ERR, "failed to set RGB field meter");
+        return resp.status;
+    }
+    PrintAndLogEx(SUCCESS, "RGB field meter %s", on ? _GREEN_("enabled") : _YELLOW_("disabled"));
+    return PM3_SUCCESS;
+}
+
 static int CmdDeviceFactoryData(const char *Cmd) {
     CLIParserContext *ctx;
     CLIParserInit(&ctx, "hw factorydata",
@@ -1954,6 +1997,7 @@ static command_t CommandTable[] = {
     {"fpgaoff", CmdFPGAOff, IfPm3Present, "Turn off FPGA on device"},
     {"ant_pm5", CmdPM5Ant, IfPm5StdAnt, "Control the antennal of pm5"},
     {"qc_pm5", CmdPM5QCTest, IfPm5, "Perform QC test for the PM5"},
+    {"rgbtune", CmdPM5RgbTune, IfPm5, "Toggle antenna RGB LED as a live field-strength meter"},
     {"factorydata", CmdDeviceFactoryData, IfI2cEeprom, "Get/Set the factory data for Device"},
     {"lcd", CmdLCD, IfPm3Lcd, "Send command/data to LCD"},
     {"lcdreset", CmdLCDReset, IfPm3Lcd, "Hardware reset LCD"},

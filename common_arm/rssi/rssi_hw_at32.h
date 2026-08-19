@@ -37,8 +37,15 @@ STATIC_FORCE_INLINE uint32_t AdcRssiDataToMilliVolt(uint16_t data, adc_rssi_ch_t
     return ((data * 1200) / g_adc_vref_value) * 4645 / 100; // = *46.45
 }
 
+// PM5 antenna RGB "field meter" (see rssi_hw_at32.c). Off by default; when
+// enabled, AdcRssiAvgToMilliVolt() colours the RGB LED from the measured field.
+void RgbFieldMeterEnable(bool on);
+void RgbFieldMeterUpdate(uint32_t mv, adc_rssi_ch_t ch);
+
 STATIC_FORCE_INLINE uint32_t AdcRssiAvgToMilliVolt(adc_rssi_ch_t ch) {
-    return AdcRssiDataToMilliVolt(AdcRssiAvg(ch), ch);
+    uint32_t mv = AdcRssiDataToMilliVolt(AdcRssiAvg(ch), ch);
+    RgbFieldMeterUpdate(mv, ch);
+    return mv;
 }
 
 #endif // ADC_RSSI_HW_AT32_H
