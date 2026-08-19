@@ -637,6 +637,8 @@ typedef struct {
 #define CMD_EEPROM_FACTORY_INFO_WRITE 0x0173
 // PM5, QC test for the hardware
 #define CMD_PM5_QC_TEST 0x0177
+// PM5, antenna RGB "field meter": colour the RGB LED from measured field strength
+#define CMD_PM5_RGB_METER 0x0178
 
 // For low-frequency tags
 #define CMD_LF_TI_READ 0x0202
