@@ -298,32 +298,32 @@ int CmdHFSearch(const char *Cmd) {
     return res;
 }
 
-// Mirror an antenna tuning level on the PM5 antenna RGB LED. `volt` is scaled
-// relative to the running peak (`v_max`), so the colour tracks the on-screen bar:
-// blue = low, green = mid, red = high. No-op on non-PM5 devices.
-static void tune_rgb_update(uint32_t volt, uint32_t v_max) {
+// Set the PM5 antenna RGB LED to a raw colour (no-op on non-PM5 devices).
+static void tune_rgb_raw(uint8_t r, uint8_t g, uint8_t b) {
     if (IfPm5() == false) {
         return;
     }
-    uint32_t t = (v_max > 0) ? (volt * 510 / v_max) : 0;
-    if (t > 510) {
-        t = 510;
-    }
-    uint8_t rgb[3];
-    if (t < 255) {          // blue -> green
-        rgb[0] = 0;
-        rgb[1] = (uint8_t)t;
-        rgb[2] = (uint8_t)(255 - t);
-    } else {                // green -> red
-        t -= 255;
-        rgb[0] = (uint8_t)t;
-        rgb[1] = (uint8_t)(255 - t);
-        rgb[2] = 0;
-    }
+    uint8_t rgb[3] = { r, g, b };
     clearCommandBuffer();
     SendCommandNG(CMD_PM5_RGB_SET, rgb, sizeof(rgb));
     PacketResponseNG resp;
     WaitForResponseTimeout(CMD_PM5_RGB_SET, &resp, 200);
+}
+
+// Mirror an antenna tuning level on the PM5 antenna RGB LED. `volt` is scaled
+// relative to the running peak (`v_max`), so the colour tracks the on-screen bar:
+// blue = low, green = mid, red = high.
+static void tune_rgb_update(uint32_t volt, uint32_t v_max) {
+    uint32_t t = (v_max > 0) ? (volt * 510 / v_max) : 0;
+    if (t > 510) {
+        t = 510;
+    }
+    if (t < 255) {          // blue -> green
+        tune_rgb_raw(0, (uint8_t)t, (uint8_t)(255 - t));
+    } else {                // green -> red
+        t -= 255;
+        tune_rgb_raw((uint8_t)t, (uint8_t)(255 - t), 0);
+    }
 }
 
 int CmdHFTune(const char *Cmd) {
@@ -432,7 +432,7 @@ int CmdHFTune(const char *Cmd) {
         }
     }
     if (use_rgb) {
-        tune_rgb_update(0, 1); // turn the LED off on exit
+        tune_rgb_raw(0, 0, 0); // turn the LED off on exit
     }
     mode[0] = 3;
 
